@@ -1,0 +1,3690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pilgrim Mining — Mine · Wallet · Multi-Network</title>
+<style>
+  :root{
+    --bg:#0a0e17;
+    --panel:rgba(22,30,48,0.72);
+    --stroke:rgba(120,150,200,0.16);
+    --text:#e8eefc;
+    --muted:#8a97b3;
+    --gold:#f5b301;
+    --green:#28d17c;
+    --red:#ff5c6c;
+    --blue:#4d8dff;
+    --purple:#a06bff;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(245,179,1,0.10), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(77,141,255,0.12), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 18px 80px}
+
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:16px 20px;margin-bottom:22px;
+    background:linear-gradient(135deg, rgba(245,179,1,0.10), rgba(77,141,255,0.06));
+    border:1px solid var(--stroke);border-radius:20px;
+    backdrop-filter:blur(10px);flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{
+    width:52px;height:52px;border-radius:14px;flex:0 0 auto;
+    background:linear-gradient(145deg,#f5b301,#c98a00);
+    display:grid;place-items:center;font-size:26px;
+    box-shadow:0 8px 24px rgba(245,179,1,0.35);
+  }
+  .brand h1{font-size:20px;letter-spacing:.3px}
+  .brand p{font-size:12px;color:var(--muted);margin-top:2px}
+  .main-wallet{text-align:right;font-size:12px;color:var(--muted)}
+  .main-wallet .addr{
+    font-family:'Consolas',monospace;color:var(--gold);font-size:12.5px;
+    background:rgba(245,179,1,0.08);padding:6px 10px;border-radius:9px;
+    border:1px solid rgba(245,179,1,0.22);display:inline-block;margin-top:5px;
+    cursor:pointer;word-break:break-all;
+  }
+  .main-wallet .addr:hover{background:rgba(245,179,1,0.16)}
+
+  .goal-card{
+    background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius);
+    padding:18px 20px;margin-bottom:22px;backdrop-filter:blur(10px);
+  }
+  .goal-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:10px;flex-wrap:wrap}
+  .goal-head h2{font-size:15px;font-weight:600}
+  .goal-head span{font-size:13px;color:var(--muted)}
+  .goal-head b{color:var(--gold)}
+  .bar{height:14px;border-radius:10px;background:rgba(255,255,255,0.06);overflow:hidden}
+  .bar > i{
+    display:block;height:100%;width:0%;
+    background:linear-gradient(90deg,#c98a00,#f5b301,#ffd75e);
+    border-radius:10px;transition:width .6s ease;
+    box-shadow:0 0 18px rgba(245,179,1,0.6);
+  }
+  .goal-note{font-size:12px;color:var(--muted);margin-top:9px}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .tab{
+    padding:11px 16px;border-radius:12px;cursor:pointer;font-size:13.5px;font-weight:600;
+    background:rgba(255,255,255,0.04);border:1px solid var(--stroke);color:var(--muted);
+    transition:.18s;user-select:none;
+  }
+  .tab:hover{color:var(--text);background:rgba(255,255,255,0.07)}
+  .tab.active{color:#0a0e17;background:linear-gradient(145deg,#f5b301,#d99b00);border-color:transparent;box-shadow:0 6px 18px rgba(245,179,1,0.3)}
+  .panel{display:none;animation:fade .35s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .coin{
+    background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius);
+    padding:18px;position:relative;overflow:hidden;backdrop-filter:blur(10px);transition:.2s;
+  }
+  .coin:hover{transform:translateY(-3px);border-color:rgba(120,150,200,0.3)}
+  .coin.mining{box-shadow:0 0 0 1px rgba(40,209,124,0.4),0 10px 30px rgba(40,209,124,0.12)}
+  .coin-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .coin-ic{
+    width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
+    font-size:22px;font-weight:700;color:#0a0e17;flex:0 0 auto;
+  }
+  .coin-name{font-size:15px;font-weight:700}
+  .coin-sym{font-size:12px;color:var(--muted)}
+  .badge-main{
+    margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.5px;
+    background:rgba(245,179,1,0.15);color:var(--gold);border:1px solid rgba(245,179,1,0.35);
+    padding:4px 8px;border-radius:20px;text-transform:uppercase;
+  }
+  .coin-bal{font-size:26px;font-weight:800;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+  .coin-bal small{font-size:13px;color:var(--muted);font-weight:600;margin-left:5px}
+  .coin-sub{font-size:12px;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between}
+  .coin-actions{display:flex;gap:8px;margin-top:15px}
+  .btn{flex:1;padding:11px;border:none;border-radius:11px;cursor:pointer;font-size:13.5px;font-weight:700;transition:.18s;font-family:inherit}
+  .btn-start{background:linear-gradient(145deg,#28d17c,#17a862);color:#04140b;box-shadow:0 6px 16px rgba(40,209,124,0.25)}
+  .btn-start:hover{filter:brightness(1.08)}
+  .btn-stop{background:linear-gradient(145deg,#ff5c6c,#d63a4a);color:#fff;box-shadow:0 6px 16px rgba(255,92,108,0.25)}
+  .btn-stop:hover{filter:brightness(1.08)}
+  .btn-ghost{background:rgba(255,255,255,0.06);color:var(--text);border:1px solid var(--stroke)}
+  .btn-ghost:hover{background:rgba(255,255,255,0.1)}
+  .pulse{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:pulse 1.2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(40,209,124,0.6)}70%{box-shadow:0 0 0 8px rgba(40,209,124,0)}100%{box-shadow:0 0 0 0 rgba(40,209,124,0)}}
+
+  .wallet-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:20px}
+  .stat{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius);padding:18px}
+  .stat .lbl{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .stat .val{font-size:23px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+  .stat .val.gold{color:var(--gold)}
+  .stat .val.green{color:var(--green)}
+  .stat .val.blue{color:var(--blue)}
+
+  .wallet-list{display:flex;flex-direction:column;gap:12px}
+  .wallet-row{
+    background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:16px 18px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .wallet-row .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#0a0e17;flex:0 0 auto}
+  .wallet-row .info{flex:1 1 200px;min-width:170px}
+  .wallet-row .info .n{font-weight:700;font-size:14px}
+  .wallet-row .info .a{font-family:'Consolas',monospace;font-size:11.5px;color:var(--muted);margin-top:3px;word-break:break-all}
+  .wallet-row .bal{text-align:right;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums;flex:0 0 auto}
+  .wallet-row .bal small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+  .copy-btn{
+    background:rgba(77,141,255,0.14);border:1px solid rgba(77,141,255,0.3);color:#9dc0ff;
+    padding:8px 12px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;
+  }
+  .copy-btn:hover{background:rgba(77,141,255,0.24)}
+  .tag-mining{font-size:10px;color:var(--green);border:1px solid rgba(40,209,124,0.35);background:rgba(40,209,124,0.1);padding:3px 7px;border-radius:20px;font-weight:700}
+
+  .form-card{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius);padding:24px;max-width:660px}
+  .form-card h2{font-size:18px;margin-bottom:4px}
+  .form-card .sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.55}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .field input,.field select{
+    width:100%;padding:13px 14px;border-radius:11px;border:1px solid var(--stroke);
+    background:rgba(9,13,22,0.7);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:.15s;
+  }
+  .field input:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,179,1,0.12)}
+  .field input:disabled{opacity:.6}
+  .field .hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .btn-primary{
+    width:100%;padding:14px;border:none;border-radius:12px;cursor:pointer;font-size:15px;font-weight:800;
+    background:linear-gradient(145deg,#f5b301,#d99b00);color:#0a0e17;font-family:inherit;
+    box-shadow:0 8px 22px rgba(245,179,1,0.3);transition:.18s;
+  }
+  .btn-primary:hover{filter:brightness(1.07);transform:translateY(-1px)}
+  .chk{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);margin-bottom:16px;cursor:pointer}
+  .chk input{width:16px;height:16px;accent-color:var(--gold)}
+
+  .nets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .net-chip{
+    font-size:11.5px;font-weight:700;padding:7px 11px;border-radius:20px;
+    background:rgba(255,255,255,0.05);border:1px solid var(--stroke);color:var(--muted);
+  }
+  .net-chip.on{color:var(--green);border-color:rgba(40,209,124,0.4);background:rgba(40,209,124,0.1)}
+
+  .preview{
+    background:rgba(9,13,22,0.6);border:1px dashed rgba(120,150,200,0.28);border-radius:12px;
+    padding:14px 16px;margin-bottom:16px;font-size:13px;
+  }
+  .preview .line{display:flex;justify-content:space-between;padding:4px 0;color:var(--muted);gap:12px}
+  .preview .line b{color:var(--text);font-variant-numeric:tabular-nums}
+  .preview .line.total b{color:var(--green);font-size:15px}
+
+  .swap-box{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end}
+  .swap-arrow{
+    width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+    background:rgba(245,179,1,0.14);border:1px solid rgba(245,179,1,0.35);color:var(--gold);
+    font-size:17px;margin-bottom:2px;transition:.2s;
+  }
+  .swap-arrow:hover{background:rgba(245,179,1,0.26);transform:rotate(180deg)}
+
+  .hist-wrap{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius);overflow:hidden}
+  .hist-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--stroke)}
+  .hist-head h2{font-size:16px}
+  .hist-empty{padding:50px 20px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;padding:12px 14px;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--stroke);background:rgba(255,255,255,0.02);white-space:nowrap}
+  td{padding:12px 14px;border-bottom:1px solid rgba(120,150,200,0.08);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .mono{font-family:'Consolas',monospace;font-size:11.5px;color:var(--muted);word-break:break-all}
+  .pill{font-size:10px;font-weight:700;padding:4px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+  .pill.ok{color:var(--green);background:rgba(40,209,124,0.12);border:1px solid rgba(40,209,124,0.3)}
+  .pill.net{color:var(--blue);background:rgba(77,141,255,0.12);border:1px solid rgba(77,141,255,0.3)}
+  .pill.ex{color:var(--purple);background:rgba(160,107,255,0.12);border:1px solid rgba(160,107,255,0.3)}
+  .amt-neg{color:var(--red);font-weight:700;white-space:nowrap}
+
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);
+    background:#1c2740;border:1px solid var(--stroke);color:var(--text);
+    padding:14px 22px;border-radius:12px;font-size:13.5px;font-weight:600;
+    box-shadow:0 12px 40px rgba(0,0,0,0.5);z-index:999;transition:.35s;max-width:90vw;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0)}
+  #toast.err{border-color:rgba(255,92,108,0.5)}
+  #toast.ok{border-color:rgba(40,209,124,0.5)}
+
+  .foot{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;justify-content:center}
+  .foot .btn-ghost{padding:10px 18px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
+
+  @media(max-width:560px){
+    .swap-box{grid-template-columns:1fr;gap:10px}
+    .swap-arrow{transform:rotate(90deg);margin:0 auto}
+    .brand h1{font-size:17px}
+    .main-wallet{text-align:left}
+    .coin-bal{font-size:22px}
+  }
+</style>
+<script>{
+  "platform": "Global Pilgrim",
+  "coin": "Pilgrim Coin",
+  "symbol": "PGC",
+  "externalWallets": {
+    "BTC": {
+      "network": "Bitcoin",
+      "address": "3PwBEGbAQHwfuGdagHx9HTaVLFWCfZgKoB",
+      "enabled": true
+    },
+    "ETH": {
+      "network": "Ethereum",
+      "address": "0xfd3f6fc9de5ef69dd3a7981011f70dc3a14c175a",
+      "enabled": true
+    },
+    "LTC": {
+      "network": "Litecoin",
+      "address": "LeLT81LAVUVN93EU3U42pEGQT6anUnzHKh",
+      "enabled": true,
+      "verificationRequired": true
+    }
+  }
+}</script>
+<script>async function loadExternalWallets() {
+  const display = document.getElementById("wallet-list");
+
+  try {
+    const response = await fetch("/api/wallets/external");
+    if (!response.ok) throw new Error("Wallet service unavailable");
+
+    const data = await response.json();
+
+    display.innerHTML = "";
+
+    Object.entries(data.wallets).forEach(([coin, wallet]) => {
+      const item = document.createElement("div");
+
+      const heading = document.createElement("h4");
+      heading.textContent = coin;
+
+      const address = document.createElement("p");
+      address.textContent = wallet.address;
+
+      item.append(heading, address);
+      display.appendChild(item);
+    });
+
+  } catch (error) {
+    display.textContent = error.message;
+  }
+}
+
+async function checkExternalWallet() {
+  const address =
+    document.getElementById("walletAddress").value.trim();
+
+  const coin = document.getElementById("coin").value;
+
+  const status = document.getElementById("walletStatus");
+
+  try {
+    const response = await fetch("/api/wallets/recognize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ address, coin })
+    });
+
+    const result = await response.json();
+
+    status.textContent = result.message;
+
+  } catch {
+    status.textContent = "Wallet recognition service unavailable.";
+  }
+}
+
+async function requestWithdrawal() {
+  const address =
+    document.getElementById("walletAddress").value.trim();
+
+  const coin = document.getElementById("coin").value;
+
+  const amount =
+    Number(document.getElementById("amount").value);
+
+  const status = document.getElementById("walletStatus");
+
+  if (!address || !Number.isFinite(amount) || amount <= 0) {
+    status.textContent = "Enter a valid wallet and amount.";
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/withdrawals", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ address, coin, amount })
+    });
+
+    const result = await response.json();
+
+    status.textContent = result.message;
+
+  } catch {
+    status.textContent = "Withdrawal service unavailable.";
+  }
+}
+
+loadExternalWallets();async function loadExternalWallets() {
+  const display = document.getElementById("wallet-list");
+
+  try {
+    const response = await fetch("/api/wallets/external");
+    if (!response.ok) throw new Error("Wallet service unavailable");
+
+    const data = await response.json();
+
+    display.innerHTML = "";
+
+    Object.entries(data.wallets).forEach(([coin, wallet]) => {
+      const item = document.createElement("div");
+
+      const heading = document.createElement("h4");
+      heading.textContent = coin;
+
+      const address = document.createElement("p");
+      address.textContent = wallet.address;
+
+      item.append(heading, address);
+      display.appendChild(item);
+    });
+
+  } catch (error) {
+    display.textContent = error.message;
+  }
+}
+
+async function checkExternalWallet() {
+  const address =
+    document.getElementById("walletAddress").value.trim();
+
+  const coin = document.getElementById("coin").value;
+
+  const status = document.getElementById("walletStatus");
+
+  try {
+    const response = await fetch("/api/wallets/recognize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ address, coin })
+    });
+
+    const result = await response.json();
+
+    status.textContent = result.message;
+
+  } catch {
+    status.textContent = "Wallet recognition service unavailable.";
+  }
+}
+
+async function requestWithdrawal() {
+  const address =
+    document.getElementById("walletAddress").value.trim();
+
+  const coin = document.getElementById("coin").value;
+
+  const amount =
+    Number(document.getElementById("amount").value);
+
+  const status = document.getElementById("walletStatus");
+
+  if (!address || !Number.isFinite(amount) || amount <= 0) {
+    status.textContent = "Enter a valid wallet and amount.";
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/withdrawals", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ address, coin, amount })
+    });
+
+    const result = await response.json();
+
+    status.textContent = result.message;
+
+  } catch {
+    status.textContent = "Withdrawal service unavailable.";
+  }
+}
+
+loadExternalWallets();</script>
+<script>const fs = require("fs");
+const path = require("path");
+
+const configPath = path.join(
+  __dirname,
+  "../config/external-wallets.json"
+);
+
+const config = JSON.parse(
+  fs.readFileSync(configPath, "utf8")
+);
+
+function recognizeWallet(address) {
+  if (!address || typeof address !== "string") {
+    return {
+      success: false,
+      message: "Wallet address required"
+    };
+  }
+
+  address = address.trim();
+
+  // Bitcoin
+  if (/^(1|3)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address)) {
+    return {
+      success: true,
+      network: "Bitcoin",
+      symbol: "BTC",
+      address
+    };
+  }
+
+  // Ethereum
+  if (/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    return {
+      success: true,
+      network: "Ethereum",
+      symbol: "ETH",
+      address
+    };
+  }
+
+  // Litecoin candidate
+  if (/^[LM3][a-km-zA-HJ-NP-Z1-9]{26,33}$/.test(address)) {
+    return {
+      success: true,
+      network: "Litecoin",
+      symbol: "LTC",
+      address
+    };
+  }
+
+  return {
+    success: false,
+    message: "Unknown wallet format. Manual verification required."
+  };
+}
+
+function getRegisteredWallets() {
+  return config.externalWallets;
+}
+
+module.exports = {
+  recognizeWallet,
+  getRegisteredWallets
+};</script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+
+<script>
+/* =====================================================
+   GLOBAL PILGRIM UNIVERSAL CRYPTO ENGINE
+   BTC ETH LTC DOGE XMR RVN PGC
+   ===================================================== */
+
+const GP = {
+
+  name: "GLOBAL PILGRIM",
+  version: "1.0.0",
+
+  coins: {
+    BTC: { name: "Bitcoin", network: "Bitcoin Mainnet" },
+    ETH: { name: "Ethereum", network: "Ethereum Mainnet" },
+    LTC: { name: "Litecoin", network: "Litecoin Mainnet" },
+    DOGE: { name: "Dogecoin", network: "Dogecoin Mainnet" },
+    XMR: { name: "Monero", network: "Monero Mainnet" },
+    RVN: { name: "Ravencoin", network: "Ravencoin Mainnet" },
+    PGC: { name: "Pilgrim Coin", network: "Pilgrim Network" }
+  },
+
+  externalWallets: {
+    BTC: "3PwBEGbAQHwfuGdagHx9HTaVLFWCfZgKoB",
+    ETH: "0xfd3f6fc9de5ef69dd3a7981011f70dc3a14c175a",
+    LTC: "LeLT81LAVUVN93EU3U42pEGQT6anUnzHKh"
+  },
+
+  confirmations: {
+    BTC: 3,
+    ETH: 12,
+    LTC: 6,
+    DOGE: 12,
+    XMR: 10,
+    RVN: 10,
+    PGC: 6
+  },
+
+  status: {
+    connected: false,
+    network: null,
+    wallet: null
+  },
+
+  transactions: [],
+
+  storageKey: "GLOBAL_PILGRIM_TRANSACTIONS_V1",
+
+  load() {
+    try {
+      this.transactions = JSON.parse(
+        localStorage.getItem(this.storageKey) || "[]"
+      );
+    } catch {
+      this.transactions = [];
+    }
+  },
+
+  save() {
+    localStorage.setItem(
+      this.storageKey,
+      JSON.stringify(this.transactions)
+    );
+  },
+
+  /* WALLET CONNECTION */
+
+  async connectEthereum() {
+
+    if (!window.ethereum) {
+      throw new Error("Install a compatible Ethereum wallet.");
+    }
+
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts"
+    });
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+
+    const signer = await provider.getSigner();
+
+    this.status.connected = true;
+    this.status.wallet = accounts[0];
+    this.status.network = await provider.getNetwork();
+
+    return {
+      address: accounts[0],
+      chainId: this.status.network.chainId.toString()
+    };
+  },
+
+  /* ADDRESS RECOGNITION */
+
+  recognizeAddress(address, coin) {
+
+    if (!address || !coin || !this.coins[coin]) {
+      return false;
+    }
+
+    const patterns = {
+      BTC: /^(1|3)[a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[ac-hj-np-z02-9]{11,87}$/i,
+      ETH: /^0x[a-fA-F0-9]{40}$/,
+      LTC: /^(L|M)[a-km-zA-HJ-NP-Z1-9]{25,34}$|^ltc1[a-z0-9]{11,87}$/i,
+      DOGE: /^D[1-9A-HJ-NP-Za-km-z]{25,34}$/,
+      XMR: /^[48][0-9AB][1-9A-HJ-NP-Za-km-z]{90,110}$/,
+      RVN: /^R[1-9A-HJ-NP-Za-km-z]{25,34}$/,
+      PGC: /^PGC[a-zA-Z0-9]{20,}$/
+    };
+
+    return Boolean(patterns[coin]?.test(address));
+  },
+
+  /* TRANSACTION RECORD */
+
+  record(data) {
+
+    if (!data.txid) {
+      throw new Error("Transaction hash required.");
+    }
+
+    const exists = this.transactions.some(
+      t => t.txid === data.txid
+    );
+
+    if (exists) {
+      throw new Error("Duplicate transaction detected.");
+    }
+
+    const transaction = {
+      ...data,
+      createdAt: new Date().toISOString()
+    };
+
+    this.transactions.push(transaction);
+    this.save();
+
+    return transaction;
+  },
+
+  /* ETHEREUM NETWORK */
+
+  async getEthereumBalance(address) {
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+
+    const balance = await provider.getBalance(address);
+
+    return ethers.formatEther(balance);
+  },
+
+  /* SEND ETH */
+
+  async sendETH(address, amount) {
+
+    if (!this.recognizeAddress(address, "ETH")) {
+      throw new Error("Invalid Ethereum address.");
+    }
+
+    const { chainId } = await this.connectEthereum();
+
+    if (chainId !== "1") {
+      throw new Error("Switch your wallet to Ethereum Mainnet.");
+    }
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+
+    const transaction = await signer.sendTransaction({
+      to: address,
+      value: ethers.parseEther(String(amount))
+    });
+
+    this.record({
+      coin: "ETH",
+      type: "WITHDRAWAL",
+      txid: transaction.hash,
+      recipient: address,
+      amount: String(amount),
+      status: "BROADCASTED"
+    });
+
+    return transaction.hash;
+  },
+
+  /* VERIFY ETH TRANSACTION */
+
+  async verifyETH(txid) {
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+
+    const receipt = await provider.getTransactionReceipt(txid);
+
+    if (!receipt) {
+      return {
+        verified: false,
+        status: "PENDING"
+      };
+    }
+
+    const latest = await provider.getBlockNumber();
+
+    const confirmations = latest - receipt.blockNumber + 1;
+
+    return {
+      verified: receipt.status === 1,
+      status: receipt.status === 1 ? "CONFIRMED" : "FAILED",
+      confirmations,
+      required: this.confirmations.ETH
+    };
+  },
+
+  /* EXTERNAL WALLET TRANSFER ROUTER */
+
+  async send(coin, address, amount) {
+
+    amount = Number(amount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Enter a valid amount.");
+    }
+
+    if (!this.recognizeAddress(address, coin)) {
+      throw new Error("Invalid " + coin + " wallet address.");
+    }
+
+    if (coin === "ETH") {
+      return await this.sendETH(address, amount);
+    }
+
+    throw new Error(
+      coin + " requires its own blockchain signing provider. " +
+      "No transaction has been sent."
+    );
+  },
+
+  /* DEPOSIT VERIFICATION */
+
+  async verifyDeposit(coin, txid, adapter) {
+
+    if (!this.coins[coin]) {
+      throw new Error("Unsupported cryptocurrency.");
+    }
+
+    if (!adapter || typeof adapter.verify !== "function") {
+      throw new Error("Blockchain verification adapter unavailable.");
+    }
+
+    const result = await adapter.verify(txid);
+
+    if (!result || result.verified !== true) {
+      return {
+        credited: false,
+        status: "UNVERIFIED"
+      };
+    }
+
+    if (result.confirmations < this.confirmations[coin]) {
+      return {
+        credited: false,
+        status: "AWAITING_CONFIRMATIONS",
+        confirmations: result.confirmations
+      };
+    }
+
+    if (!result.txid || !result.address || !result.amount) {
+      throw new Error("Incomplete blockchain verification data.");
+    }
+
+    if (result.coin !== coin) {
+      throw new Error("Cryptocurrency mismatch.");
+    }
+
+    return {
+      credited: false,
+      status: "VERIFIED_PENDING_LEDGER",
+      txid: result.txid,
+      address: result.address,
+      amount: result.amount,
+      coin
+    };
+  },
+
+  /* SECURE BACKEND CREDIT REQUEST */
+
+  async requestDepositCredit(deposit, backendURL, authToken) {
+
+    if (!backendURL || !authToken) {
+      throw new Error("Secure backend credentials required.");
+    }
+
+    const response = await fetch(
+      backendURL + "/api/deposits/credit",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + authToken
+        },
+        body: JSON.stringify(deposit)
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Deposit credit failed.");
+    }
+
+    return result;
+  },
+
+  /* TRANSACTION HISTORY */
+
+  history() {
+    return this.transactions;
+  },
+
+  /* NETWORK INFORMATION */
+
+  networkList() {
+    return Object.entries(this.coins).map(([symbol, data]) => ({
+      symbol,
+      ...data,
+      confirmations: this.confirmations[symbol]
+    }));
+  }
+};
+
+GP.load();
+
+window.GlobalPilgrim = GP;
+
+/* =====================================================
+   GLOBAL PILGRIM ENGINE READY
+   ===================================================== */
+
+console.log("GLOBAL PILGRIM UNIVERSAL CRYPTO ENGINE LOADED");
+
+</script>
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <section id="external-wallet-system">
+
+  <h2>Global Pilgrim External Wallets</h2>
+
+  <p>Recognised external cryptocurrency networks</p>
+
+  <div id="wallet-list"></div>
+
+  <h3>External Withdrawal</h3>
+
+  <select id="coin">
+    <option value="BTC">Bitcoin (BTC)</option>
+    <option value="ETH">Ethereum (ETH)</option>
+    <option value="LTC">Litecoin (LTC)</option>
+  </select>
+
+  <input
+    id="walletAddress"
+    type="text"
+    placeholder="Enter receiving wallet address"
+  >
+
+  <input
+    id="amount"
+    type="number"
+    min="0"
+    step="any"
+    placeholder="Withdrawal amount"
+  >
+
+  <button onclick="checkExternalWallet()">
+    Recognise Wallet
+  </button>
+
+  <button onclick="requestWithdrawal()">
+    Request Withdrawal
+  </button>
+
+  <p id="walletStatus"></p>
+
+</section>
+<button onclick="GP_SendCoin()">
+  SEND CRYPTO
+</button>
+
+<script>
+async function GP_SendCoin() {
+
+  try {
+
+    const coin = document.getElementById("coin").value;
+    const address = document.getElementById("address").value;
+    const amount = document.getElementById("amount").value;
+
+    const txid = await GlobalPilgrim.send(
+      coin,
+      address,
+      amount
+    );
+
+    alert("Transaction broadcasted: " + txid);
+
+  } catch(error) {
+
+    alert(error.message);
+
+  }
+
+}
+</script>
+<script>"use strict";
+
+/* ==========================================
+   GLOBAL PILGRIM SECURE BLOCKCHAIN BACKEND
+   BTC ETH LTC DOGE XMR RVN PGC
+   ========================================== */
+
+require("dotenv").config();
+
+const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
+const axios = require("axios");
+const { ethers } = require("ethers");
+const { Pool } = require("pg");
+const crypto = require("crypto");
+
+const app = express();
+
+app.use(helmet());
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGIN
+        ? process.env.ALLOWED_ORIGIN.split(",")
+        : false
+}));
+app.use(express.json({ limit: "50kb" }));
+
+/* ==========================================
+   CONFIGURATION
+   ========================================== */
+
+const PORT = process.env.PORT || 3000;
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_SSL === "true"
+        ? { rejectUnauthorized: true }
+        : undefined
+});
+
+const COINS = {
+    BTC: {
+        name: "Bitcoin",
+        rpc: "BTC_RPC_URL",
+        confirmations: 3
+    },
+
+    ETH: {
+        name: "Ethereum",
+        rpc: "ETH_RPC_URL",
+        confirmations: 12
+    },
+
+    LTC: {
+        name: "Litecoin",
+        rpc: "LTC_RPC_URL",
+        confirmations: 6
+    },
+
+    DOGE: {
+        name: "Dogecoin",
+        rpc: "DOGE_RPC_URL",
+        confirmations: 12
+    },
+
+    XMR: {
+        name: "Monero",
+        rpc: "XMR_WALLET_RPC_URL",
+        confirmations: 10
+    },
+
+    RVN: {
+        name: "Ravencoin",
+        rpc: "RVN_RPC_URL",
+        confirmations: 10
+    },
+
+    PGC: {
+        name: "Pilgrim Coin",
+        rpc: "PGC_RPC_URL",
+        confirmations: 6
+    }
+};
+
+/* ==========================================
+   DATABASE INITIALIZATION
+   ========================================== */
+
+async function initializeDatabase() {
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS gp_wallets (
+            id BIGSERIAL PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            coin TEXT NOT NULL,
+            address TEXT NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            UNIQUE(user_id, coin, address)
+        )
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS gp_balances (
+            user_id TEXT NOT NULL,
+            coin TEXT NOT NULL,
+            balance NUMERIC(40,18) NOT NULL DEFAULT 0,
+            PRIMARY KEY(user_id, coin)
+        )
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS gp_transactions (
+            id BIGSERIAL PRIMARY KEY,
+            coin TEXT NOT NULL,
+            txid TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            address TEXT NOT NULL,
+            amount NUMERIC(40,18) NOT NULL,
+            type TEXT NOT NULL,
+            status TEXT NOT NULL,
+            confirmations INTEGER DEFAULT 0,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            UNIQUE(coin, txid, type)
+        )
+    `);
+
+    console.log("GLOBAL PILGRIM DATABASE READY");
+}
+
+/* ==========================================
+   SECURITY AUTHENTICATION
+   ========================================== */
+
+function authenticate(req, res, next) {
+
+    const token = req.headers.authorization;
+
+    const expected = process.env.API_SECRET;
+
+    if (!expected || !token ||
+        token !== `Bearer ${expected}`) {
+
+        return res.status(401).json({
+            success: false,
+            error: "Unauthorized request"
+        });
+    }
+
+    next();
+}
+
+/* ==========================================
+   HEALTH CHECK
+   ========================================== */
+
+app.get("/api/health", (req, res) => {
+
+    res.json({
+        service: "GLOBAL PILGRIM",
+        status: "ONLINE",
+        supportedCoins: Object.keys(COINS),
+        realTransactionsEnabled:
+            process.env.REAL_TRANSACTIONS_ENABLED === "true",
+        time: new Date().toISOString()
+    });
+
+});
+
+/* ==========================================
+   NETWORK CONFIGURATION
+   ========================================== */
+
+app.get("/api/networks", (req, res) => {
+
+    const result = {};
+
+    for (const [coin, config] of Object.entries(COINS)) {
+
+        result[coin] = {
+            name: config.name,
+            confirmations: config.confirmations,
+            configured: Boolean(process.env[config.rpc])
+        };
+    }
+
+    res.json(result);
+
+});
+
+/* ==========================================
+   ETHEREUM BLOCKCHAIN PROVIDER
+   ========================================== */
+
+function ethereumProvider() {
+
+    if (!process.env.ETH_RPC_URL) {
+        throw new Error("Ethereum RPC not configured");
+    }
+
+    return new ethers.JsonRpcProvider(
+        process.env.ETH_RPC_URL
+    );
+}
+
+/* ==========================================
+   ETHEREUM BALANCE
+   ========================================== */
+
+app.get("/api/wallet/ETH/:address", async (req, res) => {
+
+    try {
+
+        const address = ethers.getAddress(req.params.address);
+
+        const provider = ethereumProvider();
+
+        const balance = await provider.getBalance(address);
+
+        res.json({
+            coin: "ETH",
+            address,
+            balance: ethers.formatEther(balance)
+        });
+
+    } catch (error) {
+
+        res.status(400).json({
+            error: error.message
+        });
+
+    }
+
+});
+
+/* ==========================================
+   ETHEREUM TRANSACTION VERIFICATION
+   ========================================== */
+
+app.get("/api/verify/ETH/:txid", async (req, res) => {
+
+    try {
+
+        const provider = ethereumProvider();
+
+        const receipt = await provider.getTransactionReceipt(
+            req.params.txid
+        );
+
+        if (!receipt) {
+            return res.json({
+                verified: false,
+                status: "PENDING"
+            });
+        }
+
+        const latest = await provider.getBlockNumber();
+
+        const confirmations =
+            latest - receipt.blockNumber + 1;
+
+        res.json({
+            verified: receipt.status === 1,
+            status: receipt.status === 1
+                ? "CONFIRMED"
+                : "FAILED",
+            confirmations,
+            required: COINS.ETH.confirmations,
+            transactionHash: receipt.hash,
+            blockNumber: receipt.blockNumber
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+});
+
+/* ==========================================
+   BITCOIN / LITECOIN / DOGE / RAVENCOIN RPC
+   ========================================== */
+
+async function utxoRPC(coin, method, params = []) {
+
+    const config = COINS[coin];
+
+    if (!config) {
+        throw new Error("Unsupported cryptocurrency");
+    }
+
+    const url = process.env[config.rpc];
+
+    const username = process.env[coin + "_RPC_USER"];
+    const password = process.env[coin + "_RPC_PASSWORD"];
+
+    if (!url || !username || !password) {
+        throw new Error(coin + " RPC credentials unavailable");
+    }
+
+    const response = await axios.post(
+        url,
+        {
+            jsonrpc: "1.0",
+            id: "global-pilgrim",
+            method,
+            params
+        },
+        {
+            auth: {
+                username,
+                password
+            },
+            timeout: 20000
+        }
+    );
+
+    if (response.data.error) {
+        throw new Error(response.data.error.message);
+    }
+
+    return response.data.result;
+}
+
+/* ==========================================
+   UTXO TRANSACTION VERIFICATION
+   ========================================== */
+
+app.get("/api/verify/:coin/:txid",
+authenticate, async (req, res) => {
+
+    try {
+
+        const { coin, txid } = req.params;
+
+        if (!["BTC", "LTC", "DOGE", "RVN"].includes(coin)) {
+            return res.status(400).json({
+                error: "Unsupported UTXO blockchain"
+            });
+        }
+
+        const transaction = await utxoRPC(
+            coin,
+            "getrawtransaction",
+            [txid, true]
+        );
+
+        res.json({
+            verified: true,
+            coin,
+            txid,
+            confirmations: transaction.confirmations || 0,
+            status: transaction.confirmations > 0
+                ? "CONFIRMING"
+                : "UNCONFIRMED",
+            transaction
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            verified: false,
+            error: error.message
+        });
+
+    }
+
+});
+
+/* ==========================================
+   MONERO WALLET RPC
+   ========================================== */
+
+async function moneroRPC(method, params = {}) {
+
+    const url = process.env.XMR_WALLET_RPC_URL;
+
+    const username = process.env.XMR_RPC_USER;
+    const password = process.env.XMR_RPC_PASSWORD;
+
+    if (!url || !username || !password) {
+        throw new Error("Monero wallet RPC unavailable");
+    }
+
+    const response = await axios.post(
+        url + "/" + method,
+        params,
+        {
+            auth: {
+                username,
+                password
+            },
+            timeout: 30000
+        }
+    );
+
+    return response.data;
+}
+
+/* ==========================================
+   MONERO BALANCE
+   ========================================== */
+
+app.get("/api/wallet/XMR", authenticate, async (req, res) => {
+
+    try {
+
+        const result = await moneroRPC("get_balance");
+
+        res.json({
+            coin: "XMR",
+            balance: result.balance,
+            unlockedBalance: result.unlocked_balance
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+});
+
+/* ==========================================
+   DEPOSIT CREDIT ENGINE
+   ========================================== */
+
+async function creditConfirmedDeposit(deposit) {
+
+    const {
+        coin,
+        txid,
+        userId,
+        address,
+        amount,
+        confirmations
+    } = deposit;
+
+    if (!COINS[coin]) {
+        throw new Error("Unsupported coin");
+    }
+
+    if (!txid || !userId || !address ||
+        !Number.isFinite(Number(amount)) ||
+        Number(amount) <= 0) {
+
+        throw new Error("Invalid deposit information");
+    }
+
+    if (confirmations < COINS[coin].confirmations) {
+        throw new Error("Insufficient blockchain confirmations");
+    }
+
+    const client = await pool.connect();
+
+    try {
+
+        await client.query("BEGIN");
+
+        const existing = await client.query(
+            `SELECT id FROM gp_transactions
+             WHERE coin=$1 AND txid=$2 AND type='DEPOSIT'`,
+            [coin, txid]
+        );
+
+        if (existing.rows.length) {
+            throw new Error("Duplicate deposit");
+        }
+
+        await client.query(
+            `INSERT INTO gp_transactions
+            (coin,txid,user_id,address,amount,type,status,confirmations)
+            VALUES($1,$2,$3,$4,$5,'DEPOSIT','CONFIRMED',$6)`,
+            [coin, txid, userId, address, amount, confirmations]
+        );
+
+        await client.query(
+            `INSERT INTO gp_balances(user_id,coin,balance)
+            VALUES($1,$2,$3)
+            ON CONFLICT(user_id,coin)
+            DO UPDATE SET balance =
+            gp_balances.balance + EXCLUDED.balance`,
+            [userId, coin, amount]
+        );
+
+        await client.query("COMMIT");
+
+        return {
+            success: true,
+            status: "CREDITED",
+            coin,
+            amount,
+            txid
+        };
+
+    } catch (error) {
+
+        await client.query("ROLLBACK");
+
+        throw error;
+
+    } finally {
+
+        client.release();
+
+    }
+
+}
+
+/* ==========================================
+   DEPOSIT CREDIT ENDPOINT
+   ========================================== */
+
+app.post("/api/deposits/credit",
+authenticate, async (req, res) => {
+
+    try {
+
+        const result = await creditConfirmedDeposit(req.body);
+
+        res.json(result);
+
+    } catch (error) {
+
+        res.status(400).json({
+            success: false,
+            error: error.message
+        });
+
+    }
+
+});
+
+/* ==========================================
+   CUSTOMER BALANCE
+   ========================================== */
+
+app.get("/api/balance/:userId", authenticate, async (req, res) => {
+
+    try {
+
+        const result = await pool.query(
+            `SELECT coin,balance
+             FROM gp_balances
+             WHERE user_id=$1`,
+            [req.params.userId]
+        );
+
+        res.json({
+            balances: result.rows
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+});
+
+/* ==========================================
+   TRANSACTION HISTORY
+   ========================================== */
+
+app.get("/api/history/:userId", authenticate, async (req, res) => {
+
+    try {
+
+        const result = await pool.query(
+            `SELECT coin,txid,address,amount,type,
+             status,confirmations,created_at
+             FROM gp_transactions
+             WHERE user_id=$1
+             ORDER BY created_at DESC`,
+            [req.params.userId]
+        );
+
+        res.json({
+            transactions: result.rows
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+});
+
+/* ==========================================
+   WITHDRAWAL SAFETY GATE
+   ========================================== */
+
+app.post("/api/withdrawal",
+authenticate, async (req, res) => {
+
+    const {
+        coin,
+        address,
+        amount
+    } = req.body;
+
+    if (!COINS[coin] || !address ||
+        !Number.isFinite(Number(amount)) ||
+        Number(amount) <= 0) {
+
+        return res.status(400).json({
+            error: "Invalid withdrawal request"
+        });
+    }
+
+    if (process.env.REAL_WITHDRAWALS_ENABLED !== "true") {
+
+        return res.status(403).json({
+            status: "DISABLED",
+            message: "Live withdrawals are not enabled."
+        });
+
+    }
+
+    res.status(501).json({
+        status: "SIGNING_ADAPTER_REQUIRED",
+        message:
+        "A coin-specific secure signing, balance reservation, fee calculation and broadcast adapter must be implemented before withdrawal."
+    });
+
+});
+
+/* ==========================================
+   DATABASE RECONCILIATION
+   ========================================== */
+
+app.get("/api/admin/reconciliation",
+authenticate, async (req, res) => {
+
+    try {
+
+        const result = await pool.query(`
+            SELECT
+                user_id,
+                coin,
+                balance,
+                (
+                    SELECT COALESCE(SUM(amount),0)
+                    FROM gp_transactions t
+                    WHERE t.user_id=b.user_id
+                    AND t.coin=b.coin
+                    AND t.type='DEPOSIT'
+                    AND t.status='CONFIRMED'
+                ) AS confirmed_deposits
+            FROM gp_balances b
+            ORDER BY user_id,coin
+        `);
+
+        res.json({
+            status: "REPORT_GENERATED",
+            records: result.rows
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+});
+
+/* ==========================================
+   SERVER STARTUP
+   ========================================== */
+
+async function start() {
+
+    await initializeDatabase();
+
+    app.listen(PORT, "0.0.0.0", () => {
+
+        console.log("--------------------------------");
+        console.log("GLOBAL PILGRIM BLOCKCHAIN SERVER");
+        console.log("--------------------------------");
+        console.log("STATUS: ONLINE");
+        console.log("PORT:", PORT);
+        console.log("COINS:", Object.keys(COINS).join(", "));
+        console.log("LIVE WITHDRAWALS:",
+            process.env.REAL_WITHDRAWALS_ENABLED);
+        console.log("--------------------------------");
+
+    });
+
+}
+
+start().catch(error => {
+
+    console.error("STARTUP FAILED:", error.message);
+    process.exit(1);
+
+});</script>
+
+<!-- GLOBAL PILGRIM PAYMENT CONFIGURATION -->
+<script>
+window.GLOBAL_PILGRIM_CONFIG = {
+    apiBase: "https://YOUR-BACKEND-DOMAIN.com/api",
+
+    paymentProcessor: {
+        enabled: true,
+
+        coins: [
+            "BTC",
+            "ETH",
+            "LTC",
+            "DOGE",
+            "XMR",
+            "RVN",
+            "PGC"
+        ],
+
+        pgcNetworks: [
+            "native",
+            "ethereum",
+            "external"
+        ],
+
+        withdrawalsEnabled: false,
+        automaticDepositVerification: true,
+        transactionHistory: true,
+        paymentReconciliation: true
+    }
+};
+
+console.log("Global Pilgrim payment configuration loaded.");
+</script>
+
+<script src="/wallet-integration.js"></script>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <div class="logo">⛪</div>
+      <div>
+        <h1>Pilgrim Mining</h1>
+        <p>Mine · Wallet · Multi-Network Transfer &amp; Exchange</p>
+      </div>
+    </div>
+    <div class="main-wallet">
+      <div>PILGRIM MAIN WALLET</div>
+      <div class="addr" id="mainAddr" title="Click to copy">—</div>
+    </div>
+  </header>
+
+  <div class="goal-card">
+    <div class="goal-head">
+      <h2>🏁 Mining Goal — Pilgrimcoin</h2>
+      <span><b id="goalMined">0</b> / 300 PGC mined</span>
+    </div>
+    <div class="bar"><i id="goalBar"></i></div>
+    <div class="goal-note" id="goalNote"></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="mine">⛏️ Mining</div>
+    <div class="tab" data-tab="wallet">👛 Wallet</div>
+    <div class="tab" data-tab="send">📤 Send / Withdraw</div>
+    <div class="tab" data-tab="exchange">🔄 Exchange</div>
+    <div class="tab" data-tab="history">🧾 History</div>
+  </div>
+
+  <section class="panel active" id="panel-mine">
+    <div class="grid" id="coinGrid"></div>
+  </section>
+
+  <section class="panel" id="panel-wallet">
+    <div class="wallet-summary">
+      <div class="stat"><div class="lbl">Mining Balance</div><div class="val gold" id="statMining">0</div></div>
+      <div class="stat"><div class="lbl">Wallet Balance</div><div class="val green" id="statWallet">0</div></div>
+      <div class="stat"><div class="lbl">Sent to Networks</div><div class="val blue" id="statExternal">0</div></div>
+      <div class="stat"><div class="lbl">Transactions</div><div class="val" id="statTx">0</div></div>
+    </div>
+    <div class="wallet-list" id="walletList"></div>
+  </section>
+
+  <section class="panel" id="panel-send">
+    <div class="form-card">
+      <h2>📤 Send / Withdraw to Any Network</h2>
+      <p class="sub">Move coins from your <b>mining balance</b> to your internal wallet or out to an external blockchain — Binance Smart Chain, Bitcoin.com, Litecoin, Ethereum, TON, Lightning Network, Satoshi (sats), Tron, or any custom wallet.</p>
+
+      <div class="nets" id="netChips"></div>
+
+      <div class="field">
+        <label>Coin</label>
+        <select id="sendCoin"></select>
+        <div class="hint" id="sendAvail">Available to withdraw: —</div>
+      </div>
+
+      <div class="field">
+        <label>Destination Network</label>
+        <select id="sendNet"></select>
+        <div class="hint" id="netHint">—</div>
+      </div>
+
+      <div class="field">
+        <label>Wallet Address</label>
+        <input id="sendAddr" type="text" placeholder="Enter destination wallet address" spellcheck="false" />
+        <div class="hint" id="addrHint">—</div>
+      </div>
+
+      <div class="field">
+        <label>Amount (number of coins)</label>
+        <input id="sendAmt" type="number" step="any" min="0" placeholder="0.00" />
+        <div class="hint" id="sendMax">Max: —</div>
+      </div>
+
+      <div class="preview" id="sendPreview"></div>
+
+      <label class="chk"><input type="checkbox" id="sendMain" /> Send to Pilgrim Main Wallet (internal consolidation)</label>
+
+      <button class="btn-primary" id="sendBtn">Send Coins</button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-exchange">
+    <div class="form-card">
+      <h2>🔄 Exchange / Swap</h2>
+      <p class="sub">Convert any coin in your <b>wallet balance</b> into another coin instantly. Rates are indicative market rates with a 1% swap fee.</p>
+
+      <div class="swap-box">
+        <div class="field" style="margin-bottom:0">
+          <label>From (wallet balance)</label>
+          <select id="exFrom"></select>
+        </div>
+        <div class="swap-arrow" id="exSwap" title="Swap direction">⇄</div>
+        <div class="field" style="margin-bottom:0">
+          <label>To</label>
+          <select id="exTo"></select>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:16px">
+        <label>Amount to Exchange</label>
+        <input id="exAmt" type="number" step="any" min="0" placeholder="0.00" />
+        <div class="hint" id="exMax">Available: —</div>
+      </div>
+
+      <div class="preview" id="exPreview"></div>
+
+      <button class="btn-primary" id="exBtn">Exchange Coins</button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-history">
+    <div class="hist-wrap">
+      <div class="hist-head">
+        <h2>🧾 Transaction History</h2>
+        <span style="font-size:12px;color:var(--muted)" id="histCount">0 records</span>
+      </div>
+      <div id="histBody"></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <button class="btn-ghost" id="backupBtn">⬇️ Download Backup (JSON)</button>
+    <button class="btn-ghost" id="resetBtn">♻️ Reset All Data</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+const GP_BACKEND = "https://YOUR-BACKEND-DOMAIN";
+
+async function GP_Backend(path, options = {}) {
+
+    const response = await fetch(
+        GP_BACKEND + path,
+        {
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                ...(options.headers || {})
+            }
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.error || "Backend error");
+    }
+
+    return result;
+}
+
+async function GP_ServerStatus() {
+    return GP_Backend("/api/health");
+}
+
+async function GP_NetworkStatus() {
+    return GP_Backend("/api/networks");
+}
+
+async function GP_ETHBalance(address) {
+    return GP_Backend("/api/wallet/ETH/" + encodeURIComponent(address));
+}
+
+async function GP_ETHVerify(txid) {
+    return GP_Backend("/api/verify/ETH/" + encodeURIComponent(txid));
+}
+</script>
+<script>
+/* =========================================================
+   GLOBAL PILGRIM — MULTI-COIN PAYMENT PROCESSOR
+   Supports:
+   BTC, ETH, LTC, DOGE, XMR, RVN and PGC
+
+   PGC network modes:
+   1. Independent blockchain
+   2. Ethereum ERC-20
+   3. Another supported blockchain
+
+   Requires a secure backend API.
+========================================================= */
+
+const GP_PAYMENT = {
+    apiBase: "/api",
+
+    coins: {
+        BTC:  { name: "Bitcoin", type: "UTXO" },
+        ETH:  { name: "Ethereum", type: "EVM" },
+        LTC:  { name: "Litecoin", type: "UTXO" },
+        DOGE: { name: "Dogecoin", type: "UTXO" },
+        XMR:  { name: "Monero", type: "PRIVACY" },
+        RVN:  { name: "Ravencoin", type: "UTXO" },
+        PGC:  { name: "Pilgrim Coin", type: "MULTI_NETWORK" }
+    },
+
+    pgcNetworks: {
+        native: {
+            label: "PGC Independent Blockchain",
+            network: "native"
+        },
+        ethereum: {
+            label: "PGC on Ethereum (ERC-20)",
+            network: "ethereum"
+        },
+        external: {
+            label: "PGC on Another Blockchain",
+            network: "external"
+        }
+    }
+};
+
+
+/* -------------------------------
+   API REQUEST HANDLER
+-------------------------------- */
+
+async function gpRequest(endpoint, method = "GET", data = null) {
+
+    const options = {
+        method,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        credentials: "same-origin"
+    };
+
+    if (data !== null) {
+        options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(
+        GP_PAYMENT.apiBase + endpoint,
+        options
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result.message || "Payment service request failed."
+        );
+    }
+
+    return result;
+}
+
+
+/* -------------------------------
+   PGC NETWORK SELECTION
+-------------------------------- */
+
+async function selectPGCNetwork(networkType) {
+
+    if (!GP_PAYMENT.pgcNetworks[networkType]) {
+        throw new Error("Unsupported PGC network.");
+    }
+
+    const result = await gpRequest(
+        "/pgc/network",
+        "POST",
+        {
+            network: networkType
+        }
+    );
+
+    console.log("PGC network selected:", result);
+
+    return result;
+}
+
+
+/* -------------------------------
+   LOAD AVAILABLE COINS
+-------------------------------- */
+
+async function loadPaymentCoins() {
+
+    return await gpRequest("/payments/assets");
+}
+
+
+/* -------------------------------
+   CREATE DEPOSIT INVOICE
+-------------------------------- */
+
+async function createDepositInvoice(
+    coin,
+    amount,
+    pgcNetwork = null
+) {
+
+    coin = String(coin).toUpperCase();
+
+    if (!GP_PAYMENT.coins[coin]) {
+        throw new Error("Unsupported cryptocurrency.");
+    }
+
+    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0) {
+        throw new Error("Enter a valid deposit amount.");
+    }
+
+    const request = {
+        coin,
+        amount: Number(amount)
+    };
+
+    if (coin === "PGC") {
+
+        if (!pgcNetwork ||
+            !GP_PAYMENT.pgcNetworks[pgcNetwork]) {
+            throw new Error("Select a valid PGC network.");
+        }
+
+        request.network = pgcNetwork;
+    }
+
+    const invoice = await gpRequest(
+        "/payments/deposit-invoice",
+        "POST",
+        request
+    );
+
+    console.log("Deposit invoice:", invoice);
+
+    return invoice;
+}
+
+
+/* -------------------------------
+   SUBMIT TRANSACTION HASH
+-------------------------------- */
+
+async function submitDepositTransaction(
+    invoiceId,
+    transactionHash
+) {
+
+    if (!invoiceId || !transactionHash) {
+        throw new Error("Invoice ID and transaction hash are required.");
+    }
+
+    return await gpRequest(
+        "/payments/deposit/submit",
+        "POST",
+        {
+            invoiceId,
+            transactionHash
+        }
+    );
+}
+
+
+/* -------------------------------
+   CHECK DEPOSIT STATUS
+-------------------------------- */
+
+async function checkDepositStatus(invoiceId) {
+
+    return await gpRequest(
+        "/payments/deposit/" +
+        encodeURIComponent(invoiceId)
+    );
+}
+
+
+/* -------------------------------
+   REQUEST WITHDRAWAL
+-------------------------------- */
+
+async function requestWithdrawal(
+    coin,
+    amount,
+    destinationAddress,
+    pgcNetwork = null
+) {
+
+    coin = String(coin).toUpperCase();
+
+    if (!GP_PAYMENT.coins[coin]) {
+        throw new Error("Unsupported withdrawal coin.");
+    }
+
+    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0) {
+        throw new Error("Enter a valid withdrawal amount.");
+    }
+
+    if (!destinationAddress ||
+        destinationAddress.trim().length < 10) {
+        throw new Error("Enter a valid destination address.");
+    }
+
+    const request = {
+        coin,
+        amount: Number(amount),
+        destinationAddress: destinationAddress.trim()
+    };
+
+    if (coin === "PGC") {
+
+        if (!pgcNetwork ||
+            !GP_PAYMENT.pgcNetworks[pgcNetwork]) {
+            throw new Error("Select the PGC withdrawal network.");
+        }
+
+        request.network = pgcNetwork;
+    }
+
+    /*
+      The backend must:
+      - Authenticate the customer.
+      - Check available balance.
+      - Validate the destination on the selected network.
+      - Calculate network fees.
+      - Reserve the balance.
+      - Require appropriate authorization.
+      - Sign and broadcast using secure server-side custody.
+      - Track confirmations and settle the withdrawal.
+
+      Never sign transactions using private keys in this browser.
+    */
+
+    return await gpRequest(
+        "/payments/withdraw",
+        "POST",
+        request
+    );
+}
+
+
+/* -------------------------------
+   WITHDRAWAL STATUS
+-------------------------------- */
+
+async function checkWithdrawalStatus(withdrawalId) {
+
+    return await gpRequest(
+        "/payments/withdraw/" +
+        encodeURIComponent(withdrawalId)
+    );
+}
+
+
+/* -------------------------------
+   TRANSACTION HISTORY
+-------------------------------- */
+
+async function loadPaymentHistory() {
+
+    return await gpRequest("/payments/history");
+}
+
+
+/* -------------------------------
+   PAYMENT RECONCILIATION
+-------------------------------- */
+
+async function reconcilePayments() {
+
+    return await gpRequest(
+        "/payments/reconciliation",
+        "POST",
+        {}
+    );
+}
+
+
+/* -------------------------------
+   ETHEREUM WALLET CONNECTION
+-------------------------------- */
+
+async function connectEthereumWallet() {
+
+    if (!window.ethereum) {
+        throw new Error(
+            "No compatible Ethereum wallet was detected."
+        );
+    }
+
+    const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts"
+    });
+
+    if (!accounts || !accounts.length) {
+        throw new Error("Wallet connection was not completed.");
+    }
+
+    return {
+        address: accounts[0],
+        provider: window.ethereum
+    };
+}
+
+
+/* -------------------------------
+   ETHEREUM NETWORK INFORMATION
+-------------------------------- */
+
+async function getEthereumNetwork() {
+
+    if (!window.ethereum) {
+        throw new Error("Ethereum wallet not detected.");
+    }
+
+    const chainId = await window.ethereum.request({
+        method: "eth_chainId"
+    });
+
+    return { chainId };
+}
+
+
+/* -------------------------------
+   PAYMENT ERROR HANDLING
+-------------------------------- */
+
+function showPaymentError(error) {
+
+    console.error("Global Pilgrim payment error:", error);
+
+    alert(
+        "Payment error: " +
+        (error.message || "Please try again.")
+    );
+}
+
+
+/* -------------------------------
+   INITIALIZE PROCESSOR
+-------------------------------- */
+
+async function initializeGlobalPilgrimPayments() {
+
+    try {
+
+        const assets = await loadPaymentCoins();
+
+        console.log(
+            "Global Pilgrim payment assets:",
+            assets
+        );
+
+        console.log(
+            "Global Pilgrim payment processor connected."
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Payment processor connection failed:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+/* Start when the page loads */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    initializeGlobalPilgrimPayments
+);
+
+
+/* Make functions available to your dashboard */
+
+window.GlobalPilgrimPayments = {
+    loadPaymentCoins,
+    selectPGCNetwork,
+    createDepositInvoice,
+    submitDepositTransaction,
+    checkDepositStatus,
+    requestWithdrawal,
+    checkWithdrawalStatus,
+    loadPaymentHistory,
+    reconcilePayments,
+    connectEthereumWallet,
+    getEthereumNetwork
+};
+
+</script>
+<script>"use strict";
+
+require("dotenv").config();
+
+const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+const { Pool } = require("pg");
+const jwt = require("jsonwebtoken");
+const { z } = require("zod");
+const crypto = require("crypto");
+
+const app = express();
+
+app.disable("x-powered-by");
+app.use(helmet());
+app.use(express.json({ limit: "100kb" }));
+
+app.use(cors({
+    origin: (process.env.ALLOWED_ORIGINS || "")
+        .split(",")
+        .filter(Boolean),
+    credentials: true
+}));
+
+app.use("/api", rateLimit({
+    windowMs: 60 * 1000,
+    limit: 60,
+    standardHeaders: true,
+    legacyHeaders: false
+}));
+
+const PORT = Number(process.env.PORT || 3000);
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_SSL === "true"
+        ? { rejectUnauthorized: true }
+        : undefined
+});
+
+const ASSETS = {
+    BTC:  { name: "Bitcoin", type: "UTXO" },
+    ETH:  { name: "Ethereum", type: "EVM" },
+    LTC:  { name: "Litecoin", type: "UTXO" },
+    DOGE: { name: "Dogecoin", type: "UTXO" },
+    XMR:  { name: "Monero", type: "PRIVACY" },
+    RVN:  { name: "Ravencoin", type: "UTXO" },
+    PGC:  { name: "Pilgrim Coin", type: "MULTI_NETWORK" }
+};
+
+const PGC_NETWORKS = [
+    "native",
+    "ethereum",
+    "external"
+];
+
+/*
+ * Chain adapters must be implemented using trusted RPC
+ * connections and secure server-side wallet services.
+ *
+ * Never put private keys or seed phrases in this file,
+ * the browser, or a public repository.
+ */
+const adapters = {
+    BTC: null,
+    ETH: null,
+    LTC: null,
+    DOGE: null,
+    XMR: null,
+    RVN: null,
+
+    PGC: {
+        native: null,
+        ethereum: null,
+        external: null
+    }
+};
+
+
+/* =========================================
+   DATABASE INITIALIZATION
+========================================= */
+
+async function initializeDatabase() {
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS payment_invoices (
+            id UUID PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            asset TEXT NOT NULL,
+            network TEXT NOT NULL,
+            amount NUMERIC(38,18) NOT NULL,
+            deposit_address TEXT,
+            transaction_hash TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            UNIQUE(network, asset, transaction_hash)
+        );
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS payment_ledger (
+            id UUID PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            asset TEXT NOT NULL,
+            network TEXT NOT NULL,
+            entry_type TEXT NOT NULL,
+            amount NUMERIC(38,18) NOT NULL,
+            reference_id TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            UNIQUE(entry_type, reference_id)
+        );
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS payment_withdrawals (
+            id UUID PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            asset TEXT NOT NULL,
+            network TEXT NOT NULL,
+            amount NUMERIC(38,18) NOT NULL,
+            destination_address TEXT NOT NULL,
+            transaction_hash TEXT,
+            status TEXT NOT NULL DEFAULT 'requested',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS payment_network_settings (
+            id INTEGER PRIMARY KEY DEFAULT 1,
+            pgc_network TEXT NOT NULL,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CHECK (id = 1)
+        );
+    `);
+
+    await pool.query(`
+        INSERT INTO payment_network_settings (id, pgc_network)
+        VALUES (1, 'native')
+        ON CONFLICT (id) DO NOTHING;
+    `);
+
+    console.log("Global Pilgrim payment database initialized.");
+}
+
+
+/* =========================================
+   AUTHENTICATION
+========================================= */
+
+function authenticate(req, res, next) {
+
+    const header = req.headers.authorization || "";
+    const token = header.startsWith("Bearer ")
+        ? header.slice(7)
+        : "";
+
+    if (!token || !process.env.JWT_SECRET) {
+        return res.status(401).json({
+            success: false,
+            message: "Authentication required."
+        });
+    }
+
+    try {
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+
+        if (!decoded.sub) {
+            throw new Error("Missing user identity.");
+        }
+
+        req.user = {
+            id: String(decoded.sub),
+            role: decoded.role || "customer"
+        };
+
+        next();
+
+    } catch {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid or expired session."
+        });
+    }
+}
+
+
+function requireAdmin(req, res, next) {
+
+    if (!req.user || req.user.role !== "admin") {
+        return res.status(403).json({
+            success: false,
+            message: "Administrator permission required."
+        });
+    }
+
+    next();
+}
+
+
+/* =========================================
+   VALIDATION
+========================================= */
+
+const amountSchema = z.string()
+    .or(z.number())
+    .transform(String)
+    .refine(
+        value => /^\d+(\.\d{1,18})?$/.test(value),
+        "Invalid amount."
+    )
+    .refine(
+        value => Number(value) > 0,
+        "Amount must be greater than zero."
+    );
+
+function validateAsset(asset, network) {
+
+    asset = String(asset || "").toUpperCase();
+
+    if (!ASSETS[asset]) {
+        throw new Error("Unsupported asset.");
+    }
+
+    if (asset === "PGC") {
+
+        if (!PGC_NETWORKS.includes(network)) {
+            throw new Error("Invalid PGC network.");
+        }
+
+    } else if (network && network !== asset.toLowerCase()) {
+
+        throw new Error("Network does not match the selected asset.");
+    }
+
+    return {
+        asset,
+        network: asset === "PGC"
+            ? network
+            : asset.toLowerCase()
+    };
+}
+
+
+function getAdapter(asset, network) {
+
+    if (asset === "PGC") {
+        return adapters.PGC[network] || null;
+    }
+
+    return adapters[asset] || null;
+}
+
+
+/* =========================================
+   HEALTH CHECK
+========================================= */
+
+app.get("/api/health", async (req, res) => {
+
+    try {
+
+        await pool.query("SELECT 1");
+
+        res.json({
+            success: true,
+            service: "Global Pilgrim Payment Processor",
+            status: "RUNNING",
+            database: "CONNECTED",
+            blockchainAdapters: "CONFIGURATION REQUIRED",
+            withdrawalsEnabled:
+                process.env.ENABLE_WITHDRAWALS === "true"
+        });
+
+    } catch {
+
+        res.status(503).json({
+            success: false,
+            status: "DATABASE UNAVAILABLE"
+        });
+    }
+});
+
+
+/* =========================================
+   AVAILABLE ASSETS
+========================================= */
+
+app.get("/api/payments/assets", authenticate, async (req, res) => {
+
+    res.json({
+        success: true,
+        assets: ASSETS,
+        pgcNetworks: PGC_NETWORKS
+    });
+});
+
+
+/* =========================================
+   PGC NETWORK SELECTION
+========================================= */
+
+app.post(
+    "/api/pgc/network",
+    authenticate,
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const network = req.body.network;
+
+            if (!PGC_NETWORKS.includes(network)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Unsupported PGC network."
+                });
+            }
+
+            await pool.query(`
+                UPDATE payment_network_settings
+                SET pgc_network = $1,
+                    updated_at = NOW()
+                WHERE id = 1
+            `, [network]);
+
+            res.json({
+                success: true,
+                asset: "PGC",
+                network,
+                message: "PGC network selection updated."
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+);
+
+
+/* =========================================
+   CREATE DEPOSIT INVOICE
+========================================= */
+
+app.post(
+    "/api/payments/deposit-invoice",
+    authenticate,
+    async (req, res) => {
+
+        try {
+
+            const amount = amountSchema.parse(req.body.amount);
+
+            const selected = validateAsset(
+                req.body.coin,
+                req.body.network
+            );
+
+            const adapter = getAdapter(
+                selected.asset,
+                selected.network
+            );
+
+            if (!adapter ||
+                typeof adapter.createDepositInvoice !== "function") {
+
+                return res.status(503).json({
+                    success: false,
+                    message:
+                        "This blockchain deposit adapter is not configured."
+                });
+            }
+
+            const invoiceId = crypto.randomUUID();
+
+            const invoice = await adapter.createDepositInvoice({
+                invoiceId,
+                userId: req.user.id,
+                amount,
+                asset: selected.asset,
+                network: selected.network
+            });
+
+            if (!invoice || !invoice.address) {
+                throw new Error(
+                    "Blockchain adapter did not return a deposit address."
+                );
+            }
+
+            await pool.query(`
+                INSERT INTO payment_invoices (
+                    id, user_id, asset, network,
+                    amount, deposit_address, status
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+            `, [
+                invoiceId,
+                req.user.id,
+                selected.asset,
+                selected.network,
+                amount,
+                invoice.address
+            ]);
+
+            res.status(201).json({
+                success: true,
+                invoiceId,
+                asset: selected.asset,
+                network: selected.network,
+                amount,
+                address: invoice.address,
+                status: "pending"
+            });
+
+        } catch (error) {
+
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+);
+
+
+/* =========================================
+   SUBMIT DEPOSIT TRANSACTION
+========================================= */
+
+app.post(
+    "/api/payments/deposit/submit",
+    authenticate,
+    async (req, res) => {
+
+        const client = await pool.connect();
+
+        try {
+
+            const { invoiceId, transactionHash } = req.body;
+
+            if (!invoiceId || !transactionHash ||
+                typeof transactionHash !== "string" ||
+                transactionHash.length > 200) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Valid invoice ID and transaction hash required."
+                });
+            }
+
+            const invoiceResult = await client.query(`
+                SELECT *
+                FROM payment_invoices
+                WHERE id = $1 AND user_id = $2
+            `, [invoiceId, req.user.id]);
+
+            if (!invoiceResult.rowCount) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Invoice not found."
+                });
+            }
+
+            const invoice = invoiceResult.rows[0];
+
+            if (invoice.status === "credited") {
+                return res.status(409).json({
+                    success: false,
+                    message: "This invoice has already been credited."
+                });
+            }
+
+            const adapter = getAdapter(
+                invoice.asset,
+                invoice.network
+            );
+
+            if (!adapter ||
+                typeof adapter.verifyDeposit !== "function") {
+
+                return res.status(503).json({
+                    success: false,
+                    message: "Deposit verification adapter is not configured."
+                });
+            }
+
+            /*
+             * The adapter must independently verify:
+             * - Correct blockchain and network.
+             * - Correct transaction hash.
+             * - Correct destination address.
+             * - Correct asset and amount.
+             * - Required confirmations/finality.
+             * - No previous credit for this transaction.
+             */
+
+            const verification = await adapter.verifyDeposit({
+                transactionHash,
+                invoice
+            });
+
+            if (!verification || verification.valid !== true) {
+                return res.status(202).json({
+                    success: true,
+                    status: "pending_verification",
+                    message: "Transaction has not yet been verified."
+                });
+            }
+
+            if (String(verification.amount) !== String(invoice.amount)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Verified amount does not match invoice."
+                });
+            }
+
+            if (verification.destination !== invoice.deposit_address) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction destination does not match invoice."
+                });
+            }
+
+            await client.query("BEGIN");
+
+            const updated = await client.query(`
+                UPDATE payment_invoices
+                SET transaction_hash = $1,
+                    status = 'credited',
+                    updated_at = NOW()
+                WHERE id = $2
+                  AND user_id = $3
+                  AND status <> 'credited'
+            `, [
+                transactionHash,
+                invoiceId,
+                req.user.id
+            ]);
+
+            if (!updated.rowCount) {
+                await client.query("ROLLBACK");
+
+                return res.status(409).json({
+                    success: false,
+                    message: "Invoice already processed."
+                });
+            }
+
+            await client.query(`
+                INSERT INTO payment_ledger (
+                    id, user_id, asset, network,
+                    entry_type, amount, reference_id
+                )
+                VALUES ($1, $2, $3, $4, 'deposit', $5, $6)
+            `, [
+                crypto.randomUUID(),
+                req.user.id,
+                invoice.asset,
+                invoice.network,
+                invoice.amount,
+                invoiceId
+            ]);
+
+            await client.query("COMMIT");
+
+            res.json({
+                success: true,
+                status: "credited",
+                invoiceId,
+                transactionHash
+            });
+
+        } catch (error) {
+
+            await client.query("ROLLBACK");
+
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+
+        } finally {
+
+            client.release();
+        }
+    }
+);
+
+
+/* =========================================
+   DEPOSIT STATUS
+========================================= */
+
+app.get(
+    "/api/payments/deposit/:id",
+    authenticate,
+    async (req, res) => {
+
+        const result = await pool.query(`
+            SELECT id, asset, network, amount,
+                   deposit_address, transaction_hash,
+                   status, created_at
+            FROM payment_invoices
+            WHERE id = $1 AND user_id = $2
+        `, [req.params.id, req.user.id]);
+
+        if (!result.rowCount) {
+            return res.status(404).json({
+                success: false,
+                message: "Invoice not found."
+            });
+        }
+
+        res.json({
+            success: true,
+            invoice: result.rows[0]
+        });
+    }
+);
+
+
+/* =========================================
+   WITHDRAWAL REQUEST
+========================================= */
+
+app.post(
+    "/api/payments/withdraw",
+    authenticate,
+    async (req, res) => {
+
+        try {
+
+            if (process.env.ENABLE_WITHDRAWALS !== "true") {
+                return res.status(503).json({
+                    success: false,
+                    message:
+                        "Withdrawals are disabled until secure blockchain signing and broadcasting are configured."
+                });
+            }
+
+            const amount = amountSchema.parse(req.body.amount);
+
+            const selected = validateAsset(
+                req.body.coin,
+                req.body.network
+            );
+
+            const destinationAddress =
+                String(req.body.destinationAddress || "").trim();
+
+            if (destinationAddress.length < 10 ||
+                destinationAddress.length > 200) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid destination address."
+                });
+            }
+
+            const adapter = getAdapter(
+                selected.asset,
+                selected.network
+            );
+
+            if (!adapter ||
+                typeof adapter.createWithdrawal !== "function") {
+
+                return res.status(503).json({
+                    success: false,
+                    message: "Withdrawal adapter is not configured."
+                });
+            }
+
+            /*
+             * The adapter must perform address validation,
+             * fee calculation, balance reservation, signing,
+             * broadcast and transaction tracking.
+             *
+             * It must never trust an amount or balance supplied
+             * by the browser.
+             */
+
+            const result = await adapter.createWithdrawal({
+                userId: req.user.id,
+                asset: selected.asset,
+                network: selected.network,
+                amount,
+                destinationAddress
+            });
+
+            if (!result || !result.withdrawalId) {
+                throw new Error("Withdrawal service returned no reference.");
+            }
+
+            res.status(202).json({
+                success: true,
+                withdrawalId: result.withdrawalId,
+                status: "processing"
+            });
+
+        } catch (error) {
+
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+);
+
+
+/* =========================================
+   WITHDRAWAL STATUS
+========================================= */
+
+app.get(
+    "/api/payments/withdraw/:id",
+    authenticate,
+    async (req, res) => {
+
+        const result = await pool.query(`
+            SELECT id, asset, network, amount,
+                   destination_address, transaction_hash,
+                   status, created_at, updated_at
+            FROM payment_withdrawals
+            WHERE id = $1 AND user_id = $2
+        `, [req.params.id, req.user.id]);
+
+        if (!result.rowCount) {
+            return res.status(404).json({
+                success: false,
+                message: "Withdrawal not found."
+            });
+        }
+
+        res.json({
+            success: true,
+            withdrawal: result.rows[0]
+        });
+    }
+);
+
+
+/* =========================================
+   TRANSACTION HISTORY
+========================================= */
+
+app.get(
+    "/api/payments/history",
+    authenticate,
+    async (req, res) => {
+
+        const result = await pool.query(`
+            SELECT id, asset, network,
+                   entry_type, amount,
+                   reference_id, created_at
+            FROM payment_ledger
+            WHERE user_id = $1
+            ORDER BY created_at DESC
+            LIMIT 200
+        `, [req.user.id]);
+
+        res.json({
+            success: true,
+            transactions: result.rows
+        });
+    }
+);
+
+
+/* =========================================
+   ADMIN RECONCILIATION
+========================================= */
+
+app.post(
+    "/api/payments/reconciliation",
+    authenticate,
+    requireAdmin,
+    async (req, res) => {
+
+        const result = await pool.query(`
+            SELECT asset, network, entry_type,
+                   COUNT(*) AS transaction_count,
+                   SUM(amount) AS total_amount
+            FROM payment_ledger
+            GROUP BY asset, network, entry_type
+            ORDER BY asset, network, entry_type
+        `);
+
+        res.json({
+            success: true,
+            report: result.rows,
+            note:
+                "This is an internal ledger report. Full on-chain reconciliation requires configured chain scanners."
+        });
+    }
+);
+
+
+/* =========================================
+   ERROR HANDLER
+========================================= */
+
+app.use((error, req, res, next) => {
+
+    console.error("Global Pilgrim server error:", error);
+
+    res.status(500).json({
+        success: false,
+        message: "Internal payment server error."
+    });
+});
+
+
+/* =========================================
+   START SERVER
+========================================= */
+
+async function startServer() {
+
+    try {
+
+        if (!process.env.DATABASE_URL ||
+            !process.env.JWT_SECRET) {
+
+            throw new Error(
+                "DATABASE_URL and JWT_SECRET must be configured."
+            );
+        }
+
+        if (process.env.JWT_SECRET.length < 32) {
+            throw new Error(
+                "JWT_SECRET must be at least 32 characters."
+            );
+        }
+
+        await initializeDatabase();
+
+        app.listen(PORT, "0.0.0.0", () => {
+
+            console.log("--------------------------------------");
+            console.log("GLOBAL PILGRIM PAYMENT SERVER");
+            console.log("--------------------------------------");
+            console.log("Status: RUNNING");
+            console.log("Port:", PORT);
+            console.log("BTC: Adapter required");
+            console.log("ETH: Adapter required");
+            console.log("LTC: Adapter required");
+            console.log("DOGE: Adapter required");
+            console.log("XMR: Adapter required");
+            console.log("RVN: Adapter required");
+            console.log("PGC: Three network modes available");
+            console.log("Withdrawals enabled:",
+                process.env.ENABLE_WITHDRAWALS === "true");
+            console.log("--------------------------------------");
+
+        });
+
+    } catch (error) {
+
+        console.error("SERVER STARTUP FAILED:", error.message);
+        process.exit(1);
+    }
+}
+
+startServer();</script>
+
+
+
+<script>// PGC independent blockchain
+GlobalPilgrimPayments.selectPGCNetwork("native");
+
+// PGC on Ethereum
+GlobalPilgrimPayments.selectPGCNetwork("ethereum");
+
+// PGC on another supported blockchain
+GlobalPilgrimPayments.selectPGCNetwork("external");</script>
+<script>
+/* =========================================================
+   PILGRIM MINING — app logic (multi-network)
+   Data persisted in localStorage under "pilgrimMining_v2"
+   ========================================================= */
+const STORE_KEY = "pilgrimMining_v2";
+const GOAL = 300;
+
+const COINS = [
+  { id:"pgc",  name:"Pilgrimcoin", symbol:"PGC",  color:"#f5b301", icon:"⛪", rate:0.30,    price:0.05,   main:true },
+  { id:"btc",  name:"Bitcoin",     symbol:"BTC",  color:"#f7931a", icon:"₿", rate:0.00004, price:65000 },
+  { id:"eth",  name:"Ethereum",    symbol:"ETH",  color:"#627eea", icon:"Ξ", rate:0.0006,  price:3200 },
+  { id:"ltc",  name:"Litecoin",    symbol:"LTC",  color:"#bfbbbb", icon:"Ł", rate:0.004,   price:85 },
+  { id:"doge", name:"Dogecoin",    symbol:"DOGE", color:"#c2a633", icon:"Ð", rate:0.60,    price:0.16 },
+  { id:"xmr",  name:"Monero",      symbol:"XMR",  color:"#ff6600", icon:"ɱ", rate:0.002,   price:165 },
+  { id:"rvn",  name:"Ravencoin",   symbol:"RVN",  color:"#384182", icon:"R", rate:0.80,    price:0.025 },
+  { id:"ton",  name:"Toncoin",     symbol:"TON",  color:"#0098ea", icon:"◈", rate:0.05,    price:6.5 }
+];
+const byId = id => COINS.find(c => c.id === id);
+
+const NETWORKS = [
+  { id:"internal", name:"Pilgrim Internal Wallet", short:"Internal", feePct:0,
+    hint:"Instant transfer into your in-app wallet. Zero network fee.",
+    placeholder:"PGC… (your internal address)",
+    validate:(v)=> v.length>=10 ? {ok:true} : {ok:false,msg:"Enter a valid internal wallet address."} },
+
+  { id:"bsc", name:"Binance Smart Chain (BEP-20)", short:"BSC", feePct:0.5,
+    hint:"BEP-20 tokens on Binance Smart Chain. Address starts with 0x (42 characters).",
+    placeholder:"0x…",
+    validate:(v)=> /^0x[a-fA-F0-9]{40}$/.test(v) ? {ok:true} : {ok:false,msg:"Invalid BSC address — must be 0x + 40 hex characters."} },
+
+  { id:"btccom", name:"Bitcoin.com (BTC Network)", short:"BTC.com", feePct:1.0,
+    hint:"Bitcoin network withdrawal to a Bitcoin.com wallet. Accepts bc1…, 1… or 3… addresses.",
+    placeholder:"bc1q… / 1… / 3…",
+    validate:(v)=> /^(bc1[a-zA-HJ-NP-Z0-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/.test(v) ? {ok:true} : {ok:false,msg:"Invalid Bitcoin address."} },
+
+  { id:"ltc", name:"Litecoin Network", short:"LTC", feePct:0.6,
+    hint:"Litecoin mainnet. Accepts ltc1…, L…, M… or 3… addresses.",
+    placeholder:"ltc1q… / L…",
+    validate:(v)=> /^(ltc1[a-zA-HJ-NP-Z0-9]{11,71}|[LM3][a-km-zA-HJ-NP-Z1-9]{25,34})$/.test(v) ? {ok:true} : {ok:false,msg:"Invalid Litecoin address."} },
+
+  { id:"eth", name:"Ethereum (ERC-20)", short:"ETH", feePct:0.8,
+    hint:"ERC-20 withdrawal on Ethereum mainnet. Address starts with 0x (42 characters).",
+    placeholder:"0x…",
+    validate:(v)=> /^0x[a-fA-F0-9]{40}$/.test(v) ? {ok:true} : {ok:false,msg:"Invalid Ethereum address — must be 0x + 40 hex characters."} },
+
+  { id:"ton", name:"TON Network", short:"TON", feePct:0.4,
+    hint:"The Open Network. Accepts EQ… / UQ… friendly addresses or raw 0:… form.",
+    placeholder:"EQ… / UQ…",
+    validate:(v)=> /^(EQ|UQ|0:)[a-zA-Z0-9_\-:]{20,}$/.test(v) ? {ok:true} : {ok:false,msg:"Invalid TON address."} },
+
+  { id:"lightning", name:"Lightning Network", short:"⚡ Lightning", feePct:0.1,
+    hint:"Bitcoin Lightning — paste a BOLT11 invoice (starts with lnbc…). Near-zero fees, instant.",
+    placeholder:"lnbc…",
+    validate:(v)=> /^lnbc[a-z0-9]{20,}$/i.test(v) ? {ok:true} : {ok:false,msg:"Invalid Lightning invoice — must start with lnbc."} },
+
+  { id:"satoshi", name:"Satoshi (sats) — Bitcoin micro", short:"⚡ Sats", feePct:0.5,
+    hint:"Send Bitcoin denominated in satoshi (1 BTC = 100,000,000 sats) to a BTC address.",
+    placeholder:"bc1q… / 1… / 3…",
+    validate:(v)=> /^(bc1[a-zA-HJ-NP-Z0-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/.test(v) ? {ok:true} : {ok:false,msg:"Invalid Bitcoin address for sats transfer."} },
+
+  { id:"tron", name:"Tron (TRC-20)", short:"TRON", feePct:0.5,
+    hint:"TRC-20 tokens on Tron. Address starts with T (34 characters).",
+    placeholder:"T…",
+    validate:(v)=> /^T[a-zA-HJ-NP-Z1-9]{33}$/.test(v) ? {ok:true} : {ok:false,msg:"Invalid Tron address — must start with T and be 34 characters."} },
+
+  { id:"custom", name:"Other / Custom Network", short:"Other", feePct:0.5,
+    hint:"Any other blockchain or wallet. Paste the full address.",
+    placeholder:"Paste any wallet address…",
+    validate:(v)=> v.length>=12 ? {ok:true} : {ok:false,msg:"Address looks too short."} }
+];
+const netById = id => NETWORKS.find(n=>n.id===id);
+
+function randHex(n){ let s=""; const h="0123456789abcdef"; for(let i=0;i<n;i++) s+=h[Math.floor(Math.random()*16)]; return s; }
+function randB58(n){ const a="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"; let s=""; for(let i=0;i<n;i++) s+=a[Math.floor(Math.random()*a.length)]; return s; }
+function makeAddr(coin){
+  switch(coin){
+    case "btc":  return "bc1q" + randB58(38);
+    case "eth":  return "0x" + randHex(40);
+    case "ltc":  return "ltc1q" + randB58(38);
+    case "doge": return "D" + randB58(33);
+    case "xmr":  return "4" + randB58(94);
+    case "rvn":  return "R" + randB58(33);
+    case "ton":  return "EQ" + randB58(46);
+    case "pgc":  return "PGC" + randB58(32);
+    default:     return randB58(34);
+  }
+}
+const DEC = { btc:8, eth:8, xmr:8, ltc:6, doge:4, rvn:4, ton:4, pgc:2 };
+function fmt(n, coinId){
+  const dec = DEC[coinId] ?? 4;
+  const v = Number(n)||0;
+  return v.toLocaleString(undefined,{minimumFractionDigits:0, maximumFractionDigits:dec});
+}
+function nowStr(){
+  return new Date().toLocaleString(undefined,{year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+function toast(msg, kind){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "show " + (kind||"");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>{ t.className=""; }, 3000);
+}
+
+let state;
+
+function defaultState(){
+  const s = { mining:{}, wallet:{}, addresses:{}, active:{}, history:[],
+              pilgrimAddr:"PGC"+randB58(32), goalReached:false, totalMined:0,
+              externalTotal:0, externalByNet:{} };
+  COINS.forEach(c=>{
+    s.mining[c.id]=0; s.wallet[c.id]=0; s.active[c.id]=false;
+    s.addresses[c.id]={ wallet: makeAddr(c.id), mining: makeAddr(c.id) };
+  });
+  return s;
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY) || localStorage.getItem("pilgrimMining_v1");
+    if(!raw) return defaultState();
+    const s = JSON.parse(raw);
+    COINS.forEach(c=>{
+      if(typeof s.mining[c.id] !== "number") s.mining[c.id]=0;
+      if(typeof s.wallet[c.id] !== "number") s.wallet[c.id]=0;
+      if(typeof s.active[c.id] !== "boolean") s.active[c.id]=false;
+      if(!s.addresses[c.id]) s.addresses[c.id]={ wallet: makeAddr(c.id), mining: makeAddr(c.id) };
+    });
+    if(!s.pilgrimAddr) s.pilgrimAddr = "PGC"+randB58(32);
+    if(!Array.isArray(s.history)) s.history=[];
+    if(typeof s.totalMined !== "number") s.totalMined=0;
+    if(typeof s.goalReached !== "boolean") s.goalReached=false;
+    if(typeof s.externalTotal !== "number") s.externalTotal=0;
+    if(!s.externalByNet || typeof s.externalByNet!=="object") s.externalByNet={};
+    return s;
+  }catch(e){ return defaultState(); }
+}
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+let tickTimer=null;
+function startEngine(){ if(!tickTimer) tickTimer = setInterval(tick,1000); }
+function tick(){
+  let changed=false;
+  COINS.forEach(c=>{
+    if(!state.active[c.id]) return;
+    if(c.id==="pgc" && state.mining.pgc >= GOAL){
+      state.active.pgc=false; state.goalReached=true; changed=true;
+      toast("🏁 Goal reached — 300 PGC mined!","ok"); return;
+    }
+    const variance = 0.75 + Math.random()*0.5;
+    let amt = c.rate * variance;
+    if(c.id==="pgc"){ amt = Math.min(amt, GOAL - state.mining.pgc); state.totalMined += amt; }
+    state.mining[c.id] += amt; changed=true;
+  });
+  if(changed){
+    save(); renderMining(); renderGoal();
+    if(document.getElementById("panel-wallet").classList.contains("active")) renderWallet();
+    if(document.getElementById("panel-send").classList.contains("active")) updateSendFields();
+  }
+}
+
+function renderGoal(){
+  const mined = Math.min(state.mining.pgc, GOAL);
+  const pct = Math.min(100,(mined/GOAL)*100);
+  document.getElementById("goalMined").textContent = fmt(mined,"pgc");
+  document.getElementById("goalBar").style.width = pct + "%";
+  const note = document.getElementById("goalNote");
+  if(mined >= GOAL){
+    note.innerHTML = "✅ <b style='color:var(--green)'>Goal complete!</b> 300 PGC mined — Pilgrimcoin mining stopped automatically.";
+  }else{
+    note.textContent = "Mining continues until 300 Pilgrimcoin (PGC) are mined. " + fmt(GOAL-mined,"pgc") + " PGC remaining.";
+  }
+}
+
+function shade(hex, pct){
+  const n = parseInt(hex.replace("#",""),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255; const f=pct/100;
+  r=Math.max(0,Math.min(255,Math.round(r+255*f)));
+  g=Math.max(0,Math.min(255,Math.round(g+255*f)));
+  b=Math.max(0,Math.min(255,Math.round(b+255*f)));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+function renderMining(){
+  const grid = document.getElementById("coinGrid");
+  grid.innerHTML="";
+  COINS.forEach(c=>{
+    const mining = state.mining[c.id];
+    const active = state.active[c.id];
+    const hash = (8 + Math.random()*90).toFixed(1);
+    const card = document.createElement("div");
+    card.className = "coin" + (active?" mining":"");
+    card.innerHTML = `
+      <div class="coin-top">
+        <div class="coin-ic" style="background:linear-gradient(145deg,${c.color},${shade(c.color,-25)})">${c.icon}</div>
+        <div><div class="coin-name">${c.name}</div><div class="coin-sym">${c.symbol}</div></div>
+        ${c.main?'<span class="badge-main">Main</span>':''}
+      </div>
+      <div class="coin-bal">${fmt(mining,c.id)}<small>${c.symbol}</small></div>
+      <div class="coin-sub">
+        <span>${active?'<span class="pulse"></span>Mining…':'Idle'}</span>
+        <span>${active?hash+" MH/s":"—"}</span>
+      </div>
+      <div class="coin-sub" style="margin-top:6px">
+        <span>Wallet: ${fmt(state.wallet[c.id],c.id)} ${c.symbol}</span>
+        <span>Rate ${c.rate} /s</span>
+      </div>
+      <div class="coin-actions">
+        <button class="btn ${active?'btn-stop':'btn-start'}" data-toggle="${c.id}">${active?'■ Stop Mining':'▶ Start Mining'}</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll("[data-toggle]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const id = b.getAttribute("data-toggle");
+      if(id==="pgc" && state.mining.pgc >= GOAL){ toast("Pilgrimcoin goal already reached (300 PGC).","err"); return; }
+      state.active[id] = !state.active[id];
+      save(); renderMining(); renderGoal();
+      toast((state.active[id]?"Started mining ":"Stopped mining ")+byId(id).name, state.active[id]?"ok":"");
+    });
+  });
+}
+
+function renderWallet(){
+  document.getElementById("mainAddr").textContent = state.pilgrimAddr;
+  let totMine=0, totWallet=0;
+  COINS.forEach(c=>{ totMine+=state.mining[c.id]; totWallet+=state.wallet[c.id]; });
+  document.getElementById("statMining").textContent = fmt(totMine,"pgc")+" coins";
+  document.getElementById("statWallet").textContent = fmt(totWallet,"pgc")+" coins";
+  document.getElementById("statExternal").textContent = fmt(state.externalTotal,"pgc")+" coins";
+  document.getElementById("statTx").textContent = state.history.length;
+
+  const list = document.getElementById("walletList");
+  list.innerHTML="";
+  COINS.forEach(c=>{
+    const sats = c.id==="btc" ? " · " + Math.round(state.wallet.btc*1e8).toLocaleString() + " sats" : "";
+    const row = document.createElement("div");
+    row.className="wallet-row";
+    row.innerHTML = `
+      <div class="ic" style="background:linear-gradient(145deg,${c.color},${shade(c.color,-25)})">${c.icon}</div>
+      <div class="info">
+        <div class="n">${c.name} <span style="color:var(--muted);font-weight:500">(${c.symbol})</span></div>
+        <div class="a">Wallet: ${state.addresses[c.id].wallet}</div>
+        <div class="a">Mining/Withdraw: ${state.addresses[c.id].mining} <span class="tag-mining">withdraw</span></div>
+      </div>
+      <div class="bal">${fmt(state.wallet[c.id],c.id)}<small>${c.symbol}${sats}</small></div>
+      <button class="copy-btn" data-copy="${state.addresses[c.id].wallet}">Copy</button>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll("[data-copy]").forEach(b=>{
+    b.addEventListener("click", ()=>copyText(b.getAttribute("data-copy")));
+  });
+}
+function copyText(txt){
+  const done = ()=>toast("Address copied ✓","ok");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done, ()=>fallbackCopy(txt));
+  } else fallbackCopy(txt);
+}
+function fallbackCopy(txt){
+  const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta);
+  ta.select(); try{document.execCommand("copy"); toast("Address copied ✓","ok");}catch(e){toast("Copy failed","err");}
+  document.body.removeChild(ta);
+}
+
+function buildNetChips(){
+  const box = document.getElementById("netChips");
+  box.innerHTML = "";
+  NETWORKS.forEach(n=>{
+    const s = document.createElement("span");
+    s.className = "net-chip";
+    s.textContent = n.short;
+    s.dataset.net = n.id;
+    box.appendChild(s);
+  });
+}
+function renderSend(){
+  const coinSel = document.getElementById("sendCoin");
+  const netSel = document.getElementById("sendNet");
+  const prevCoin = coinSel.value, prevNet = netSel.value;
+
+  coinSel.innerHTML="";
+  COINS.forEach(c=>{
+    const o=document.createElement("option");
+    o.value=c.id;
+    o.textContent=`${c.name} (${c.symbol}) — mining: ${fmt(state.mining[c.id],c.id)}`;
+    coinSel.appendChild(o);
+  });
+  if(prevCoin && byId(prevCoin)) coinSel.value = prevCoin;
+
+  netSel.innerHTML="";
+  NETWORKS.forEach(n=>{
+    const o=document.createElement("option");
+    o.value=n.id;
+    o.textContent=n.name + (n.feePct>0 ? ` — fee ${n.feePct}%` : " — no fee");
+    netSel.appendChild(o);
+  });
+  if(prevNet && netById(prevNet)) netSel.value = prevNet;
+
+  updateSendFields();
+}
+function updateSendFields(){
+  const id = document.getElementById("sendCoin").value;
+  const c = byId(id);
+  const net = netById(document.getElementById("sendNet").value);
+  const avail = state.mining[id] || 0;
+
+  document.getElementById("sendAvail").textContent = `Available to withdraw: ${fmt(avail,id)} ${c.symbol}`;
+  document.getElementById("sendMax").textContent = `Max: ${fmt(avail,id)} ${c.symbol}`;
+  document.getElementById("netHint").textContent = net.hint;
+
+  document.querySelectorAll("#netChips .net-chip").forEach(ch=>{
+    ch.classList.toggle("on", ch.dataset.net === net.id);
+  });
+
+  const addr = document.getElementById("sendAddr");
+  const mainChk = document.getElementById("sendMain");
+  addr.placeholder = net.placeholder;
+  document.getElementById("addrHint").textContent =
+    net.id==="internal" ? "Tip: your own wallet address is pre-filled." : "Paste the destination address on " + net.name + ".";
+
+  if(net.id === "internal"){
+    mainChk.disabled = false;
+    if(mainChk.checked){ addr.value = state.pilgrimAddr; addr.disabled = true; }
+    else { addr.disabled = false; addr.value = state.addresses[id].mining; }
+  }else{
+    mainChk.checked = false; mainChk.disabled = true;
+    addr.disabled = false;
+    if(addr.value === state.addresses[id].mining || addr.value === state.pilgrimAddr) addr.value = "";
+  }
+  updateSendPreview();
+}
+function updateSendPreview(){
+  const id = document.getElementById("sendCoin").value;
+  const c = byId(id);
+  const net = netById(document.getElementById("sendNet").value);
+  const amt = parseFloat(document.getElementById("sendAmt").value) || 0;
+  const fee = amt * net.feePct / 100;
+  const recv = Math.max(0, amt - fee);
+  const box = document.getElementById("sendPreview");
+
+  let extra = "";
+  if(id==="btc" || net.id==="satoshi" || net.id==="lightning"){
+    extra = `<div class="line"><span>In satoshi</span><b>${Math.round(amt*1e8).toLocaleString()} sats</b></div>`;
+  }
+  box.innerHTML = `
+    <div class="line"><span>Amount</span><b>${fmt(amt,id)} ${c.symbol}</b></div>
+    <div class="line"><span>Network fee (${net.feePct}%)</span><b>${fmt(fee,id)} ${c.symbol}</b></div>
+    ${extra}
+    <div class="line total"><span>Recipient receives</span><b>${fmt(recv,id)} ${c.symbol}</b></div>`;
+}
+
+function doSend(){
+  const id = document.getElementById("sendCoin").value;
+  const c = byId(id);
+  const net = netById(document.getElementById("sendNet").value);
+  const amt = parseFloat(document.getElementById("sendAmt").value);
+  const addr = document.getElementById("sendAddr").value.trim();
+  const toMain = document.getElementById("sendMain").checked;
+  const avail = state.mining[id] || 0;
+
+  if(!addr){ toast("Enter a destination wallet address.","err"); return; }
+  const v = net.validate(addr);
+  if(!v.ok){ toast(v.msg,"err"); return; }
+  if(isNaN(amt) || amt<=0){ toast("Enter a valid amount.","err"); return; }
+  if(amt > avail + 1e-12){ toast(`Not enough ${c.symbol} in mining balance (max ${fmt(avail,id)}).`,"err"); return; }
+
+  const fee = amt * net.feePct / 100;
+  const recv = amt - fee;
+
+  state.mining[id] -= amt;
+  if(state.mining[id] < 0) state.mining[id] = 0;
+
+  if(net.id === "internal"){
+    state.wallet[id] += recv;
+  }else{
+    state.externalTotal += recv;
+    state.externalByNet[net.id] = (state.externalByNet[net.id]||0) + recv;
+  }
+
+  state.history.unshift({
+    time: nowStr(), ts: Date.now(),
+    type: net.id==="internal" ? "Transfer" : "Withdrawal",
+    coin: c.symbol, coinName: c.name, color: c.color, icon: c.icon,
+    amount: amt, fee, received: recv,
+    network: net.name, networkId: net.id,
+    from: "Mining Balance",
+    to: net.id==="internal" ? (toMain ? "Pilgrim Main Wallet" : "Internal Wallet") : net.short + " Network",
+    address: addr,
+    status: "Completed"
+  });
+  save();
+  document.getElementById("sendAmt").value = "";
+  renderAll();
+  toast(`Sent ${fmt(recv,id)} ${c.symbol} via ${net.short} ✓`,"ok");
+}
+
+function renderExchange(){
+  const from = document.getElementById("exFrom");
+  const to = document.getElementById("exTo");
+  const pf = from.value, pt = to.value;
+  from.innerHTML=""; to.innerHTML="";
+  COINS.forEach(c=>{
+    const o1=document.createElement("option");
+    o1.value=c.id; o1.textContent=`${c.name} (${c.symbol}) — ${fmt(state.wallet[c.id],c.id)}`;
+    from.appendChild(o1);
+    const o2=document.createElement("option");
+    o2.value=c.id; o2.textContent=`${c.name} (${c.symbol})`;
+    to.appendChild(o2);
+  });
+  from.value = (pf && byId(pf)) ? pf : "pgc";
+  to.value = (pt && byId(pt)) ? pt : "btc";
+  if(from.value === to.value) to.value = COINS.find(c=>c.id!==from.value).id;
+  updateExchange();
+}
+function updateExchange(){
+  const fid = document.getElementById("exFrom").value;
+  const tid = document.getElementById("exTo").value;
+  const f = byId(fid), t = byId(tid);
+  const avail = state.wallet[fid] || 0;
+  const amt = parseFloat(document.getElementById("exAmt").value) || 0;
+
+  document.getElementById("exMax").textContent = `Available: ${fmt(avail,fid)} ${f.symbol}`;
+
+  const rate = f.price / t.price;
+  const gross = amt * rate;
+  const fee = gross * 0.01;
+  const recv = gross - fee;
+
+  document.getElementById("exPreview").innerHTML = `
+    <div class="line"><span>Rate</span><b>1 ${f.symbol} ≈ ${fmt(rate,tid)} ${t.symbol}</b></div>
+    <div class="line"><span>You pay</span><b>${fmt(amt,fid)} ${f.symbol}</b></div>
+    <div class="line"><span>Swap fee (1%)</span><b>${fmt(fee,tid)} ${t.symbol}</b></div>
+    <div class="line total"><span>You receive</span><b>${fmt(recv,tid)} ${t.symbol}</b></div>`;
+}
+function doExchange(){
+  const fid = document.getElementById("exFrom").value;
+  const tid = document.getElementById("exTo").value;
+  const f = byId(fid), t = byId(tid);
+  const amt = parseFloat(document.getElementById("exAmt").value);
+  const avail = state.wallet[fid] || 0;
+
+  if(fid === tid){ toast("Choose two different coins.","err"); return; }
+  if(isNaN(amt) || amt<=0){ toast("Enter a valid amount.","err"); return; }
+  if(amt > avail + 1e-12){ toast(`Not enough ${f.symbol} in wallet (max ${fmt(avail,fid)}).`,"err"); return; }
+
+  const rate = f.price / t.price;
+  const gross = amt * rate;
+  const fee = gross * 0.01;
+  const recv = gross - fee;
+
+  state.wallet[fid] -= amt;
+  if(state.wallet[fid] < 0) state.wallet[fid] = 0;
+  state.wallet[tid] += recv;
+
+  state.history.unshift({
+    time: nowStr(), ts: Date.now(), type:"Exchange",
+    coin: `${f.symbol} → ${t.symbol}`, coinName: `${f.name} to ${t.name}`,
+    color: t.color, icon: "🔄",
+    amount: amt, fee, received: recv,
+    network: "Pilgrim Exchange", networkId: "exchange",
+    from: `${fmt(amt,fid)} ${f.symbol}`, to: `${fmt(recv,tid)} ${t.symbol}`,
+    address: "Internal swap",
+    status: "Completed"
+  });
+  save();
+  document.getElementById("exAmt").value = "";
+  renderAll();
+  toast(`Exchanged ${fmt(amt,fid)} ${f.symbol} → ${fmt(recv,tid)} ${t.symbol} ✓`,"ok");
+}
+
+function renderHistory(){
+  const body = document.getElementById("histBody");
+  document.getElementById("histCount").textContent = state.history.length + " record" + (state.history.length===1?"":"s");
+  if(!state.history.length){
+    body.innerHTML = '<div class="hist-empty">No transactions yet.<br>Mine coins, then use “Send / Withdraw” to move them to a wallet or external network, or “Exchange” to swap coins.</div>';
+    return;
+  }
+  const rows = state.history.map(h=>{
+    const pillCls = h.type==="Exchange" ? "ex" : (h.networkId==="internal" ? "ok" : "net");
+    const sym = (h.coin||"").split(" ")[0].toLowerCase();
+    const amtCell = `<span class="amt-neg">-${fmt(h.amount, sym)} ${(h.coin||"").split(" ")[0]}</span>`;
+    return `<tr>
+      <td style="white-space:nowrap">${h.time}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:7px"><span style="width:22px;height:22px;border-radius:6px;display:inline-grid;place-items:center;background:${h.color};color:#0a0e17;font-weight:700;font-size:12px">${h.icon}</span>${h.coin}</span></td>
+      <td>${amtCell}</td>
+      <td><span class="pill ${pillCls}">${h.type}</span></td>
+      <td style="white-space:nowrap">${h.network}</td>
+      <td class="mono">${h.address}</td>
+      <td><span class="pill ok">${h.status}</span></td>
+    </tr>`;
+  }).join("");
+  body.innerHTML = `<div style="overflow-x:auto"><table>
+    <thead><tr><th>Time</th><th>Coin</th><th>Amount</th><th>Type</th><th>Network</th><th>Address</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+
+function renderAll(){
+  renderGoal(); renderMining(); renderWallet(); renderSend(); renderExchange(); renderHistory();
+}
+
+function initTabs(){
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+      t.classList.add("active");
+      document.getElementById("panel-"+t.dataset.tab).classList.add("active");
+      if(t.dataset.tab==="wallet") renderWallet();
+      if(t.dataset.tab==="send") renderSend();
+      if(t.dataset.tab==="exchange") renderExchange();
+      if(t.dataset.tab==="history") renderHistory();
+    });
+  });
+}
+
+function init(){
+  state = load();
+  buildNetChips();
+  initTabs();
+
+  document.getElementById("sendCoin").addEventListener("change", updateSendFields);
+  document.getElementById("sendNet").addEventListener("change", updateSendFields);
+  document.getElementById("sendMain").addEventListener("change", updateSendFields);
+  document.getElementById("sendAmt").addEventListener("input", updateSendPreview);
+  document.getElementById("sendBtn").addEventListener("click", doSend);
+
+  document.getElementById("exFrom").addEventListener("change", updateExchange);
+  document.getElementById("exTo").addEventListener("change", updateExchange);
+  document.getElementById("exAmt").addEventListener("input", updateExchange);
+  document.getElementById("exBtn").addEventListener("click", doExchange);
+  document.getElementById("exSwap").addEventListener("click", ()=>{
+    const f=document.getElementById("exFrom"), t=document.getElementById("exTo");
+    const tmp=f.value; f.value=t.value; t.value=tmp; updateExchange();
+  });
+
+  document.getElementById("mainAddr").addEventListener("click", ()=>copyText(state.pilgrimAddr));
+
+  document.getElementById("backupBtn").addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "pilgrim-mining-backup.json";
+    a.click(); URL.revokeObjectURL(a.href);
+    toast("Backup downloaded ✓","ok");
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    if(confirm("Reset ALL mining, wallet balances, addresses and history? This cannot be undone.")){
+      state = defaultState(); save(); renderAll(); toast("All data reset.","ok");
+    }
+  });
+
+  renderAll();
+  startEngine();
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
